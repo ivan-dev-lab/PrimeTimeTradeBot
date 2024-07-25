@@ -3,7 +3,7 @@ import os
 
 class Finder():
     def __init__(self, name: str, refind: bool=False) -> None:
-        self.result = ...
+        self.result = self.get_result()
         self.name = name
         self.__refind = refind
     
@@ -16,18 +16,13 @@ class Finder():
     def __preprocess_file (self):
         current_dir_path = os.path.abspath(f'src/data/{self.name}/')
         
-        if os.path.exists(current_dir_path+'/result.txt') and self.__refind == False:
-            result = ''
-            with open(current_dir_path+'/result.txt', mode='r', encoding='utf8') as result_file:
-                return result_file.read()
-        else:
-            data = pd.read_csv(current_dir_path+'/data.csv', sep=';')
-            data['<DATE>'] = data['<DATE>'].apply(self.__convert_date)    
-            data['<TIME>'] = data['<TIME>'].apply(self.__convert_time)
+        data = pd.read_csv(current_dir_path+'/data.csv', sep=';')
+        data['<DATE>'] = data['<DATE>'].apply(self.__convert_date)    
+        data['<TIME>'] = data['<TIME>'].apply(self.__convert_time)
             
-            return data
+        return data
         
-    def find (self):
+    def __find (self) -> dict:
         data = self.__preprocess_file()
         hours = {}
         for time in data['<TIME>'].unique():
@@ -59,5 +54,5 @@ class Finder():
             
         return hours
             
-
-print(Finder('GDU4', 0).find())
+    def get_result (self):
+        ...
