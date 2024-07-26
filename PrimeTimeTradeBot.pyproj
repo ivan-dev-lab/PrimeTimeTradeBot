@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>dc8cabda-6b59-4852-880d-71305dfe06ce</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>src\Bot\config.py</StartupFile>
+    <StartupFile>src\Bot\main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
