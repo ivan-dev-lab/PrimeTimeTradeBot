@@ -10,9 +10,6 @@ class Finder():
         self.name = name
         self.__refind = refind
         self.vol_weight, self.percentage_change_weight, self.range_price_weight = weights
-
-    def __convert_date (self, date) -> str:
-        return f"{str(date)[:2]}.{str(date)[2:4]}.{str(date)[4:]}"
     
     def __convert_hour (self, hour) -> int:
         if str(hour)[0] == '9': return 9
@@ -22,7 +19,6 @@ class Finder():
         current_dir_path = os.path.abspath(f'src/data/{self.name}/')
         
         data = pd.read_csv(current_dir_path+'/data.csv', sep=';')
-        data['<DATE>'] = data['<DATE>'].apply(self.__convert_date)    
         data['<TIME>'] = data['<TIME>'].apply(self.__convert_hour)
             
         return data
