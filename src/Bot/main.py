@@ -6,13 +6,11 @@ import shutil
 from src.core.finder import Finder
 from config import decrypt, load_dotenv
 
-# decrypt(filepath_in='.env.enc', filepath_out='.env')
-# BOT_TOKEN = load_dotenv(filepath_env='.env')['BOT_TOKEN']
-# os.remove(os.path.abspath('.env'))
+decrypt(filepath_in='.env.enc', filepath_out='.env')
+BOT_TOKEN = load_dotenv(filepath_env='.env')['BOT_TOKEN']
+os.remove(os.path.abspath('.env'))
 
-# bot = Bot(BOT_TOKEN)
-
-bot = Bot('7222661918:AAEF8_eUubcFl7SP1yswBD_KuFvb_HP_4zk')
+bot = Bot(BOT_TOKEN)
 dp = Dispatcher()
 
 
