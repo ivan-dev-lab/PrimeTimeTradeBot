@@ -155,8 +155,11 @@ class Finder():
             result_text+=f'Самое большое изменение цены в процентах = <b>{best_hours_by["percentage_change"][0]}:00 - {best_hours_by["percentage_change"][1]*100}%</b>\n'
             result_text+=f'Самый большой диапазон изменения цены = <b>{best_hours_by["range_price"][0]}:00 - {best_hours_by["range_price"][1]} пп.</b>\n'
             
+            result_text+='\n<b>Время указано по МСК (UTC+3)</b>'
+
             with open(current_dir_path + '/result.txt', mode='w+', encoding='utf8') as result_file:
                 result_file.write(result_text)
             
             return result_text
            
+Finder('GDU4', 1).get_analysis()
