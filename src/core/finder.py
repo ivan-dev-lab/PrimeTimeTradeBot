@@ -6,9 +6,10 @@ import seaborn as sns
 
 
 class Finder():
-    def __init__(self, name: str, refind: bool=False) -> None:
+    def __init__(self, name: str, refind: bool=False, weights: tuple=(0.4, 0.3, 0.3)) -> None:
         self.name = name
         self.__refind = refind
+        self.vol_weight, self.percentage_change_weight, self.range_price_weight = weights
 
     def __convert_date (self, date) -> str:
         return f"{str(date)[:2]}.{str(date)[2:4]}.{str(date)[4:]}"
@@ -63,7 +64,7 @@ class Finder():
         min_val = np.min(data)
         return [(x - min_val)/(max_val-min_val) for x in data]
     
-    def analyzer (self, vol_weight: int=0.4, percentage_change_weight: int=0.3, range_price_weight: int=0.3) -> dict:
+    def __analyze (self) -> dict:
         hours, avg_volume, avg_percentage_change, avg_range_price = self.__finder()
 
         norm_volume = self.__normalize_minmax(avg_volume)
@@ -73,10 +74,10 @@ class Finder():
         # расчёт индекса для каждого часа (макс. индекс = 1)
         index_hours = []
         for i in range(len(hours)):
-            index = norm_volume[i]*vol_weight \
-                    + norm_percentages[i]*percentage_change_weight \
-                    + norm_range_price[i]*range_price_weight
-            index_hours.append((hours[i], index))
+            index = norm_volume[i]*self.vol_weight \
+                    + norm_percentages[i]*self.percentage_change_weight \
+                    + norm_range_price[i]*self.range_price_weight
+            index_hours.append((hours[i], round(index, 2) ))
         
         best_hours_by = {}
         # поиск часа с самым высоким показателем
@@ -86,7 +87,7 @@ class Finder():
         
         max_avg_percentage_change = max(avg_percentage_change)
         index_max_avg_percentage_change = avg_percentage_change.index(max_avg_percentage_change)
-        best_hours_by['percentage_change'] = (hours[index_max_avg_percentage_change], max_avg_volume)
+        best_hours_by['percentage_change'] = (hours[index_max_avg_percentage_change], max_avg_percentage_change)
         
         max_avg_range_price = max(avg_range_price)
         index_max_avg_range_price = avg_range_price.index(max_avg_range_price)
@@ -138,5 +139,28 @@ class Finder():
             with open(current_dir_path+'/result.txt', mode='r', encoding='utf8') as result_file:
                 return result_file.read()
         else:
-            ...
+            analyz = self.__analyze()
+            indexes_hours, best_hours_by = analyz['indexes'], analyz['best_hours_by'] 
+            result_text = f'<b>Анализ {self.name}</b>\n\n'
             
+            result_text+=f'<b>Лучшие часы для торговли {self.name} согласно индексам:</b>\n'
+            indexes_hours.sort(key = lambda x: x[1], reverse=True)
+            
+            for index_hour in indexes_hours:
+                if len(str(index_hour[1])) < 4: index_hour_str = f'{index_hour[1]}0'
+                else: index_hour_str = str(index_hour[1])                    
+                if index_hour[0] == 9: 
+                    result_text+=f'0{index_hour[0]}:00 = {index_hour_str}\n'
+                else:
+                    result_text+=f'{index_hour[0]}:00 = {index_hour_str}\n'
+            
+            result_text+=f'\n<b>Лучшие часы для торговли {self.name} согласно показателям актива:</b>\n'
+            result_text+=f'Самый большой объем = <b>{best_hours_by["volume"][0]}:00 - {best_hours_by["volume"][1]}</b>\n'
+            result_text+=f'Самое большое изменение цены в процентах = <b>{best_hours_by["percentage_change"][0]}:00 - {best_hours_by["percentage_change"][1]*100}%</b>\n'
+            result_text+=f'Самый большой диапазон изменения цены = <b>{best_hours_by["range_price"][0]}:00 - {best_hours_by["range_price"][1]} пп.</b>\n'
+            
+            with open(current_dir_path + '/result.txt', mode='w+', encoding='utf8') as result_file:
+                result_file.write(result_text)
+            
+            return result_text
+           
