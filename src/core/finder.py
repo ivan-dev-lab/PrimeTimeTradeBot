@@ -6,9 +6,9 @@ import seaborn as sns
 
 
 class Finder():
-    def __init__(self, name: str, refind: bool=False, weights: tuple=(0.4, 0.3, 0.3)) -> None:
+    def __init__(self, name: str, chat_id: int, weights: tuple=(0.4, 0.3, 0.3)) -> None:
         self.name = name
-        self.__refind = refind
+        self.chat_id = chat_id
         self.vol_weight, self.percentage_change_weight, self.range_price_weight = weights
     
     def __convert_hour (self, hour) -> int:
@@ -16,7 +16,7 @@ class Finder():
         else: return int(str(hour)[:2])
     
     def __preprocess_file (self):
-        current_dir_path = os.path.abspath(f'src/data/{self.name}/')
+        current_dir_path = os.path.abspath(f'src/data/{self.chat_id}/{self.name}/')
         
         data = pd.read_csv(current_dir_path+'/data.csv', sep=';')
         data['<TIME>'] = data['<TIME>'].apply(self.__convert_hour)
@@ -48,16 +48,20 @@ class Finder():
 
                 # расчет диапазона изменения цены
                 range_price.append(high-low)
-                    
-            avg_percentage_change.append(round(sum(percentages)/len(percentages), 2))
-            avg_range_price.append(round(sum(range_price)/len(range_price)))
+
             
+            avg_percentage_change.append(round(sum(percentages)/len(percentages), 2))
+            avg_range_price.append(round(sum(range_price)/len(range_price), 2))
         
         return (hours, avg_volume, avg_percentage_change, avg_range_price)
     
     def __normalize_minmax (self, data: list) -> float:
         max_val = np.max(data)
         min_val = np.min(data)
+        
+        if max_val == min_val:
+            return [0.0 for _ in data]
+        
         return [(x - min_val)/(max_val-min_val) for x in data]
     
     def __analyze (self) -> dict:
@@ -102,7 +106,7 @@ class Finder():
         plt.title('График объема от времени')
         plt.xlabel('Часы')
         plt.ylabel('Объём')
-        plt.savefig(os.path.abspath(f'src/data/{self.name}/charts/volume.png'))
+        plt.savefig(os.path.abspath(f'src/data/{self.chat_id}/{self.name}/charts/volume.png'))
         plt.clf()
 
         # график изменения цены в процентах от времени
@@ -112,7 +116,7 @@ class Finder():
         plt.title('График изменения цены в процентах от времени')
         plt.xlabel('Часы')
         plt.ylabel('Изменение цены в процентах')
-        plt.savefig(os.path.abspath(f'src/data/{self.name}/charts/percentage-change.png'))
+        plt.savefig(os.path.abspath(f'src/data/{self.chat_id}/{self.name}/charts/percentage-change.png'))
         plt.clf()
 
         # график изменения диапазона цены от времени
@@ -122,16 +126,16 @@ class Finder():
         plt.title('График диапазона цены от времени')
         plt.xlabel('Часы')
         plt.ylabel('Изменение диапазона цены')
-        plt.savefig(os.path.abspath(f'src/data/{self.name}/charts/range-price.png'))
+        plt.savefig(os.path.abspath(f'src/data/{self.chat_id}/{self.name}/charts/range-price.png'))
         plt.clf()
 
         return {'indexes': index_hours, 'best_hours_by': best_hours_by}
         
     def get_analysis (self) -> str:
         # функция предназначена для формирования анализа и отправки его в TG, поэтому уже в HTML разметке
-        current_dir_path = os.path.abspath(f'src/data/{self.name}/')
+        current_dir_path = os.path.abspath(f'src/data/{self.chat_id}/{self.name}/')
         
-        if os.path.exists(current_dir_path+'/result.txt') and self.__refind == False:
+        if os.path.exists(current_dir_path+'/result.txt'):
             with open(current_dir_path+'/result.txt', mode='r', encoding='utf8') as result_file:
                 return result_file.read()
         else:
@@ -152,7 +156,7 @@ class Finder():
             
             result_text+=f'\n<b>Лучшие часы для торговли {self.name} согласно показателям актива:</b>\n'
             result_text+=f'Самый большой объем = <b>{best_hours_by["volume"][0]}:00 - {best_hours_by["volume"][1]}</b>\n'
-            result_text+=f'Самое большое изменение цены в процентах = <b>{best_hours_by["percentage_change"][0]}:00 - {best_hours_by["percentage_change"][1]*100}%</b>\n'
+            result_text+=f'Самое большое изменение цены в процентах = <b>{best_hours_by["percentage_change"][0]}:00 - {best_hours_by["percentage_change"][1]}%</b>\n'
             result_text+=f'Самый большой диапазон изменения цены = <b>{best_hours_by["range_price"][0]}:00 - {best_hours_by["range_price"][1]} пп.</b>\n'
             
             result_text+='\n<b>Время указано по МСК (UTC+3)</b>'
@@ -161,5 +165,3 @@ class Finder():
                 result_file.write(result_text)
             
             return result_text
-           
-Finder('GDU4', 1).get_analysis()
