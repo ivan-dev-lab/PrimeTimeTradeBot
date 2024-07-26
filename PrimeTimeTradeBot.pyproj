@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>dc8cabda-6b59-4852-880d-71305dfe06ce</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>src\core\finder.py</StartupFile>
+    <StartupFile>src\Bot\config.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -27,7 +27,11 @@
     <Folder Include="src\Bot\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\Bot\config.py" />
+    <Compile Include="src\Bot\main.py" />
     <Compile Include="src\core\finder.py" />
+    <Compile Include="src\core\__init__.py" />
+    <Compile Include="src\__init__.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
