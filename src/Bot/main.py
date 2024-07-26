@@ -3,16 +3,17 @@ from aiogram.filters import Command
 import asyncio
 import os
 import shutil
-from src.core import finder
+from src.core.finder import Finder
 from config import decrypt, load_dotenv
 
-decrypt(filepath_in='.env.enc', filepath_out='.env')
-BOT_TOKEN = load_dotenv(filepath_env='.env')['BOT_TOKEN']
-os.remove(os.path.abspath('.env'))
+# decrypt(filepath_in='.env.enc', filepath_out='.env')
+# BOT_TOKEN = load_dotenv(filepath_env='.env')['BOT_TOKEN']
+# os.remove(os.path.abspath('.env'))
 
-bot = Bot(BOT_TOKEN)
+# bot = Bot(BOT_TOKEN)
+
+bot = Bot('7222661918:AAEF8_eUubcFl7SP1yswBD_KuFvb_HP_4zk')
 dp = Dispatcher()
-
 
 
 @dp.message(Command('help'))
@@ -30,9 +31,39 @@ async def start (message: types.Message):
     text+='7) Формат записи в файл - <b>DATE, TIME, OPEN, HIGH, LOW, CLOSE, VOL</b>\n'
     await bot.send_photo(message.chat.id, instruction_photo, caption=text, parse_mode='HTML')
         
+@dp.message(F.content_type.in_([types.ContentType.DOCUMENT]))
+async def start (message: types.Message):
+    document = message.document
+    file_id = document.file_id
+
+    file_info = await bot.get_file(file_id)
+
+    user_dir = os.path.abspath(f'src/data/{message.chat.id}')
+    if not os.path.exists(user_dir):
+        os.makedirs(user_dir)
     
+    fin_asset_dir = f'{user_dir}/{document.file_name.split(".")[0]}/'
+    if not os.path.exists(fin_asset_dir):
+        os.makedirs(fin_asset_dir)
+    else:
+        shutil.rmtree(fin_asset_dir)
+        os.makedirs(fin_asset_dir)
     
+    os.makedirs(f'{fin_asset_dir}/charts/')
+    download_path = os.path.join(fin_asset_dir, 'data.csv')
+
+    await bot.download_file(file_info.file_path, download_path)
     
+    finder = Finder(document.file_name.split(".")[0], message.chat.id)
+    analyz = finder.get_analysis()
+    
+    media = []
+    for chart_photo in os.listdir(os.path.join(fin_asset_dir, 'charts/')):
+        media.append(types.InputMediaPhoto(media=types.FSInputFile(f'{fin_asset_dir}/charts/{chart_photo}')))
+    
+    await bot.send_media_group(message.chat.id, media)
+    await bot.send_message(message.chat.id, analyz, parse_mode='HTML')
+
 async def main ():
     await dp.start_polling(bot)
     
