@@ -23,7 +23,7 @@
   <ItemGroup>
     <Folder Include="src\" />
     <Folder Include="src\core\" />
-    <Folder Include="src\data\" />
+    <Folder Include="data\" />
     <Folder Include="src\Bot\" />
   </ItemGroup>
   <ItemGroup>
