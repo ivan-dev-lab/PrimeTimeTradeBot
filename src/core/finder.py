@@ -146,7 +146,7 @@ class Finder():
             return {'indexes': index_hours, 'best_hours_by': best_hours_by}
         else:
             return response
-    def get_analysis (self) -> str:
+    def save_analysis (self) -> str:
         # функция предназначена для формирования анализа и отправки его в TG, поэтому уже в HTML разметке
         current_dir_path = os.path.abspath(f'data/{self.chat_id}/{self.name}/')
         
@@ -179,6 +179,5 @@ class Finder():
             with open(os.path.join(current_dir_path, 'result.json'), mode='w') as json_result_file:
                 json.dump(response, json_result_file, default=str)
 
-            return result_text
         else:
             return response
