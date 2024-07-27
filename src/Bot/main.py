@@ -4,6 +4,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 import asyncio
 import os
 import shutil
+import json
 from src.core.finder import Finder
 from config import decrypt, load_dotenv
 
@@ -13,9 +14,6 @@ os.remove(os.path.abspath('.env'))
 
 bot = Bot(BOT_TOKEN)
 dp = Dispatcher()
-
-
-# TODO сделать сводку , 2 лучших часа для торговли каждого из инструментов
 
 @dp.message(Command('start'))
 async def start (message: types.Message):
@@ -114,6 +112,44 @@ async def get_analys (callback: types.CallbackQuery):
 
         await bot.send_message(callback.message.chat.id, result_text, parse_mode='HTML')
 
+@dp.message(Command('summary'))
+async def get_summary (message: types.Message):
+    user_dir = os.path.abspath(f'data/{message.chat.id}/')
+    summary_text = []
+    start_summary_text = 'Сводка по вашим активам: '
+
+    for idx, fin_asset in enumerate(os.listdir(user_dir)):
+        fin_asset_json_path = f'{user_dir}/{fin_asset}/result.json'
+        
+        if idx != len(os.listdir(user_dir))-1: start_summary_text+=f'<b>{fin_asset}</b>, '
+        else: start_summary_text+=f'<b>{fin_asset}</b>'
+        
+        
+        with open(fin_asset_json_path, mode='r') as json_result_file:
+            data = json.load(json_result_file)
+            fin_asset_summary_text = f'Сводка по <b>{fin_asset}</b>:\n\n'
+            fin_asset_summary_text+=f'<b>Топ 3 лучших часов для торговли {fin_asset} согласно индексам:</b>\n'
+            
+            for index_hour in data['indexes'][:3]:
+                if len(str(index_hour[1])) < 4: index_hour_str = f'{index_hour[1]}0'
+                else: index_hour_str = str(index_hour[1])                    
+                if index_hour[0] == 9: 
+                    fin_asset_summary_text+=f'0{index_hour[0]}:00 = {index_hour_str}\n'
+                else:
+                    fin_asset_summary_text+=f'{index_hour[0]}:00 = {index_hour_str}\n'    
+                    
+            fin_asset_summary_text+=f'\n<b>Лучшие часы для торговли {fin_asset} согласно показателям актива:</b>\n'
+            fin_asset_summary_text+=f'Самый большой объем = <b>{data["best_hours_by"]["volume"][0]}:00 - {data["best_hours_by"]["volume"][1]}</b>\n'
+            fin_asset_summary_text+=f'Самое большое изменение цены в процентах = <b>{data["best_hours_by"]["percentage_change"][0]}:00 - {data["best_hours_by"]["percentage_change"][1]}%</b>\n'
+            fin_asset_summary_text+=f'Самый большой диапазон изменения цены = <b>{data["best_hours_by"]["range_price"][0]}:00 - {data["best_hours_by"]["range_price"][1]} пп.</b>\n'
+            
+            summary_text.append(fin_asset_summary_text)
+            
+    summary_text.append(start_summary_text)
+    
+    for text in reversed(summary_text):
+        await bot.send_message(message.chat.id, text, parse_mode='HTML')
+    
 async def main ():
     await dp.start_polling(bot)
     
