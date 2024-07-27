@@ -17,7 +17,7 @@ class Finder():
         else: return int(str(hour)[:2])
     
     def __preprocess_file (self):
-        current_dir_path = os.path.abspath(f'src/data/{self.chat_id}/{self.name}/')
+        current_dir_path = os.path.abspath(f'data/{self.chat_id}/{self.name}/')
 
         data = pd.read_csv(current_dir_path+'/data.csv', sep=';')
 
@@ -117,30 +117,30 @@ class Finder():
             sns.lineplot(x=hours, y=avg_volume, color='b')
             plt.gca().set_xticks(hours)
         
-            plt.title('График объема от времени')
+            plt.title(f'График объема от времени {self.name}')
             plt.xlabel('Часы')
             plt.ylabel('Объём')
-            plt.savefig(os.path.abspath(f'src/data/{self.chat_id}/{self.name}/charts/volume.png'))
+            plt.savefig(os.path.abspath(f'data/{self.chat_id}/{self.name}/charts/volume.png'))
             plt.clf()
 
             # график изменения цены в процентах от времени
             sns.lineplot(x=hours, y=avg_percentage_change, color='b')
             plt.gca().set_xticks(hours)
         
-            plt.title('График изменения цены в процентах от времени')
+            plt.title(f'График изменения цены в процентах от времени {self.name}')
             plt.xlabel('Часы')
             plt.ylabel('Изменение цены в процентах')
-            plt.savefig(os.path.abspath(f'src/data/{self.chat_id}/{self.name}/charts/percentage-change.png'))
+            plt.savefig(os.path.abspath(f'data/{self.chat_id}/{self.name}/charts/percentage-change.png'))
             plt.clf()
 
             # график изменения диапазона цены от времени
             sns.lineplot(x=hours, y=avg_range_price, color='b')
             plt.gca().set_xticks(hours)
         
-            plt.title('График диапазона цены от времени')
+            plt.title(f'График диапазона цены от времени {self.name}')
             plt.xlabel('Часы')
             plt.ylabel('Изменение диапазона цены')
-            plt.savefig(os.path.abspath(f'src/data/{self.chat_id}/{self.name}/charts/range-price.png'))
+            plt.savefig(os.path.abspath(f'data/{self.chat_id}/{self.name}/charts/range-price.png'))
             plt.clf()
 
             return {'indexes': index_hours, 'best_hours_by': best_hours_by}
@@ -148,7 +148,7 @@ class Finder():
             return response
     def get_analysis (self) -> str:
         # функция предназначена для формирования анализа и отправки его в TG, поэтому уже в HTML разметке
-        current_dir_path = os.path.abspath(f'src/data/{self.chat_id}/{self.name}/')
+        current_dir_path = os.path.abspath(f'data/{self.chat_id}/{self.name}/')
         
         response =  self.__analyze()
         if type(response) != str:
