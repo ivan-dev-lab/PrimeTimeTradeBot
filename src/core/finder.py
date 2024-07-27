@@ -1,9 +1,9 @@
-﻿from uu import Error
-import pandas as pd
+﻿import pandas as pd
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import json
 
 
 class Finder():
@@ -38,7 +38,7 @@ class Finder():
             hours, avg_volume, avg_percentage_change, avg_range_price = [], [], [], []
         
             for hour in data['<TIME>'].unique():
-                hours.append(hour)
+                hours.append(int(hour))
                 avg_volume.append(round(data.loc[data['<TIME>'] == hour]['<VOL>'].mean(), 2))
             
                 percentages = []
@@ -152,8 +152,7 @@ class Finder():
         
         response =  self.__analyze()
         if type(response) != str:
-            analyz = response
-            indexes_hours, best_hours_by = analyz['indexes'], analyz['best_hours_by'] 
+            indexes_hours, best_hours_by = response['indexes'], response['best_hours_by'] 
             result_text = f'<b>Анализ {self.name}</b>\n\n'
             
             result_text+=f'<b>Лучшие часы для торговли {self.name} согласно индексам:</b>\n'
@@ -174,9 +173,12 @@ class Finder():
             
             result_text+='\n<b>Время указано по МСК (UTC+3)</b>'
 
-            with open(current_dir_path + '/result.txt', mode='w+', encoding='utf8') as result_file:
-                result_file.write(result_text)
-            
+            with open(os.path.join(current_dir_path, 'result.txt'), mode='w+', encoding='utf8') as txt_result_file:
+                txt_result_file.write(result_text)
+
+            with open(os.path.join(current_dir_path, 'result.json'), mode='w') as json_result_file:
+                json.dump(response, json_result_file, default=str)
+
             return result_text
         else:
             return response
