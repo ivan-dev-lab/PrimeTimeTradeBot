@@ -62,15 +62,9 @@ async def upload_data (message: types.Message):
 
         await bot.download_file(file_info.file_path, download_path)
     
-        finder = Finder(document.file_name.split(".")[0], message.chat.id)
-        analyz = finder.get_analysis()
+        Finder(document.file_name.split(".")[0], message.chat.id).save_analysis()
     
-        media = []
-        for chart_photo in os.listdir(os.path.join(fin_asset_dir, 'charts/')):
-            media.append(types.InputMediaPhoto(media=types.FSInputFile(f'{fin_asset_dir}/charts/{chart_photo}')))
-        
-        if media: await bot.send_media_group(message.chat.id, media)
-        await bot.send_message(message.chat.id, analyz, parse_mode='HTML')
+        await bot.send_message(message.chat.id, 'Данные успешно обработаны. Ознакомиться с результатами вы можете в меню бота <b>/menu</b>', parse_mode='HTML')
     else:
         await bot.send_message(message.chat.id, '<b>Недопустимый формат файла. Необходим .csv</b>', parse_mode='HTML')
        
@@ -86,7 +80,7 @@ async def display_menu (message: types.Message):
         for idx, fin_asset in enumerate(list_fin_assets, start=1):
             menu_text+=f'{idx}. <b>{fin_asset}</b>;\n'
             assets_builder.add(types.InlineKeyboardButton(text=fin_asset, callback_data=f'fin_asset-{fin_asset}'))
-    
+        assets_builder.adjust(4)
         menu_text+='\nЗапросить сводку по всем активам - <b>/summary</b>'
         menu_text+='\n\nИнструкция по загрузке данных - <b>/help</b>'
         menu_text+='\n\nЗапросить полный анализ по сохраненному активу - кнопки снизу ↘️'
