@@ -158,13 +158,13 @@ class Finder():
             result_text+=f'<b>Лучшие часы для торговли {self.name} согласно индексам:</b>\n'
             indexes_hours.sort(key = lambda x: x[1], reverse=True)
             
-            for index_hour in indexes_hours:
-                if len(str(index_hour[1])) < 4: index_hour_str = f'{index_hour[1]}0'
-                else: index_hour_str = str(index_hour[1])                    
-                if index_hour[0] == 9: 
-                    result_text+=f'0{index_hour[0]}:00 = {index_hour_str}\n'
+            for index_by_hour in indexes_hours:
+                if len(str(index_by_hour[1])) < 4: index_hour_str = f'{index_by_hour[1]}0'
+                else: index_hour_str = str(index_by_hour[1])                    
+                if index_by_hour[0] == 9: 
+                    result_text+=f'0{index_by_hour[0]}:00 = {index_hour_str}\n'
                 else:
-                    result_text+=f'{index_hour[0]}:00 = {index_hour_str}\n'
+                    result_text+=f'{index_by_hour[0]}:00 = {index_hour_str}\n'
             
             result_text+=f'\n<b>Лучшие часы для торговли {self.name} согласно показателям актива:</b>\n'
             result_text+=f'Самый большой объем = <b>{best_hours_by["volume"][0]}:00 - {best_hours_by["volume"][1]}</b>\n'
