@@ -14,6 +14,8 @@ bot = Bot(BOT_TOKEN)
 dp = Dispatcher()
 
 
+# TODO сделать меню
+
 @dp.message(Command('help'))
 async def start (message: types.Message):
     instruction_photo = types.FSInputFile(os.path.abspath('src/Bot/instruction.jpg'))
@@ -32,35 +34,40 @@ async def start (message: types.Message):
 @dp.message(F.content_type.in_([types.ContentType.DOCUMENT]))
 async def start (message: types.Message):
     document = message.document
-    file_id = document.file_id
-
-    file_info = await bot.get_file(file_id)
-
-    user_dir = os.path.abspath(f'src/data/{message.chat.id}')
-    if not os.path.exists(user_dir):
-        os.makedirs(user_dir)
     
-    fin_asset_dir = f'{user_dir}/{document.file_name.split(".")[0]}/'
-    if not os.path.exists(fin_asset_dir):
-        os.makedirs(fin_asset_dir)
+    if document.mime_type == 'text/csv':
+
+        file_id = document.file_id
+
+        file_info = await bot.get_file(file_id)
+    
+        user_dir = os.path.abspath(f'src/data/{message.chat.id}')
+        if not os.path.exists(user_dir):
+            os.makedirs(user_dir)
+    
+        fin_asset_dir = f'{user_dir}/{document.file_name.split(".")[0]}/'
+        if not os.path.exists(fin_asset_dir):
+            os.makedirs(fin_asset_dir)
+        else:
+            shutil.rmtree(fin_asset_dir)
+            os.makedirs(fin_asset_dir)
+    
+        os.makedirs(f'{fin_asset_dir}/charts/')
+        download_path = os.path.join(fin_asset_dir, 'data.csv')
+
+        await bot.download_file(file_info.file_path, download_path)
+    
+        finder = Finder(document.file_name.split(".")[0], message.chat.id)
+        analyz = finder.get_analysis()
+    
+        media = []
+        for chart_photo in os.listdir(os.path.join(fin_asset_dir, 'charts/')):
+            media.append(types.InputMediaPhoto(media=types.FSInputFile(f'{fin_asset_dir}/charts/{chart_photo}')))
+        
+        if media: await bot.send_media_group(message.chat.id, media)
+        await bot.send_message(message.chat.id, analyz, parse_mode='HTML')
     else:
-        shutil.rmtree(fin_asset_dir)
-        os.makedirs(fin_asset_dir)
-    
-    os.makedirs(f'{fin_asset_dir}/charts/')
-    download_path = os.path.join(fin_asset_dir, 'data.csv')
-
-    await bot.download_file(file_info.file_path, download_path)
-    
-    finder = Finder(document.file_name.split(".")[0], message.chat.id)
-    analyz = finder.get_analysis()
-    
-    media = []
-    for chart_photo in os.listdir(os.path.join(fin_asset_dir, 'charts/')):
-        media.append(types.InputMediaPhoto(media=types.FSInputFile(f'{fin_asset_dir}/charts/{chart_photo}')))
-    
-    await bot.send_media_group(message.chat.id, media)
-    await bot.send_message(message.chat.id, analyz, parse_mode='HTML')
+        await bot.send_message(message.chat.id, '<b>Недопустимый формат файла. Необходим .csv</b>', parse_mode='HTML')
 
 async def main ():
     await dp.start_polling(bot)
